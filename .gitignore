@@ -1,0 +1,17 @@
+# IDE files
+.idea
+.vscode
+.vs
+
+# Terraform status files
+.terraform
+.terraform.lock.hcl
+.terraform.tfstate
+.terraform.tfstate.backup
+.terraform.tfstate.d
+.terraform.tfvars
+.terraform.tfvars.json
+.terraform.tfvars.example
+.terraformrc
+.terraformrc.json
+.terraformrc.example

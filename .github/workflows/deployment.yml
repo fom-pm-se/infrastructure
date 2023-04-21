@@ -2,37 +2,24 @@ name: Deploy to AKS
 
 on:
   workflow_dispatch:
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: Azure
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Set up Kubectl
-        uses: azure/setup-kubectl@v1
-        with:
-          version: 'latest'
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.1.0
-
-      - name: Configure Azure CLI
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Get AKS credentials
-        run: |
-          az aks get-credentials --resource-group <resource-group-name> --name <aks-cluster-name> --overwrite-existing
-
-      - name: Deploy Kubernetes Secrets
-        run: |
-          kubectl apply -f secrets.yaml
 
       - name: Initialize Terraform
         run: |
@@ -43,13 +30,3 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
-
-      - name: Deploy Kubernetes Deployment and Service
-        run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
-
-      - name: Update deployment status
-        run: |
-          DEPLOYMENT_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/deployments/${{ github.event.deployment.id }}/statuses"
-          curl -X POST "${DEPLOYMENT_URL}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" -d '{"state": "success"}'
